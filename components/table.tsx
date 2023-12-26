@@ -1,6 +1,94 @@
 import prisma from "@/lib/prisma"
 import { timeAgo } from "@/lib/utils"
 import RefreshButton from "./refresh-button"
+import { activity } from "@prisma/client"
+import Link from "next/link"
+
+function TableItemSavedInner({
+  user,
+  activity,
+}: {
+  user: { name: string }
+  activity: activity
+}) {
+  return (
+    <Link href={(activity.event_data as any).source_url} target="_blank">
+      <p className="text-sm font-semibold text-gray-800">
+        {(activity.event_data as any).title}
+      </p>
+      <p className="text-xs text-gray-500">
+        {(activity.event_data as any).author}
+      </p>
+    </Link>
+  )
+}
+
+function TableItemHighlightedInner({
+  user,
+  activity,
+}: {
+  user: { name: string }
+  activity: activity
+}) {
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
+    (activity.event_data as any).doc_data.source_url ? (
+      <Link
+        href={(activity.event_data as any).doc_data.source_url}
+        target="_blank"
+      >
+        {children}
+      </Link>
+    ) : (
+      <>{children}</>
+    )
+
+  return (
+    <>
+      <p className="text-md  font-italic text-gray-700">
+        &ldquo;{(activity.event_data as any).text}&rdquo;
+      </p>
+      <Wrapper>
+        <p className="text-xs text-gray-500 mt-1">
+          <span className="font-medium">
+            {(activity.event_data as any).doc_data.readable_title}
+          </span>
+          {(activity.event_data as any).doc_data.author ? (
+            <>, {(activity.event_data as any).doc_data.author}</>
+          ) : null}
+        </p>
+      </Wrapper>
+    </>
+  )
+}
+
+function TableItem({
+  user,
+  activity,
+}: {
+  user: { name: string }
+  activity: activity
+}) {
+  return (
+    <div className="py-4">
+      <div className="flex items-center justify-between ">
+        <p className="text-sm text-gray-500">
+          <span className="font-medium">{user.name}</span>{" "}
+          {activity.type === "HIGHLIGHTED" ? "highlighted" : null}
+          {activity.type === "SAVED" ? "saved" : null}
+        </p>
+        <p className="text-sm text-gray-500">{timeAgo(activity.created_at)}</p>
+      </div>
+      <div className="px-3 py-3 bg-gray-400/10 mt-2 rounded">
+        {activity.type === "HIGHLIGHTED" ? (
+          <TableItemHighlightedInner user={user} activity={activity} />
+        ) : null}
+        {activity.type === "SAVED" ? (
+          <TableItemSavedInner user={user} activity={activity} />
+        ) : null}
+      </div>
+    </div>
+  )
+}
 
 export default async function Table() {
   const startTime = Date.now()
@@ -23,33 +111,7 @@ export default async function Table() {
       </div>
       <div className="divide-y divide-gray-900/5">
         {items.map((doc) => (
-          <div key={doc.id} className="flex items-center justify-between py-3">
-            <div className="flex items-center space-x-4">
-              {/* <Image
-                src={user.image}
-                alt={user.name}
-                width={48}
-                height={48}
-                className="rounded-full ring-1 ring-gray-900/5"
-              /> */}
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">
-                  {doc.type === "HIGHLIGHTED" ? "Jack highlighted" : null}
-                  {doc.type === "SAVED" ? "Jack saved" : null}
-                </p>
-                <p className="font-medium leading-none">
-                  {doc.type === "HIGHLIGHTED"
-                    ? (doc.event_data as any).doc_data.readable_title
-                    : null}
-                  {doc.type === "SAVED" ? (doc.event_data as any).title : null}
-                </p>
-                {doc.type === "HIGHLIGHTED" ? (
-                  <p>{(doc.event_data as any).text}</p>
-                ) : null}
-              </div>
-            </div>
-            <p className="text-sm text-gray-500">{timeAgo(doc.created_at)}</p>
-          </div>
+          <TableItem key={doc.id} user={{ name: "Jack" }} activity={doc} />
         ))}
       </div>
     </div>
