@@ -11,10 +11,18 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
-model users {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  image     String
-  createdAt DateTime @default(now())
+enum activity_type {
+  SAVED
+  HIGHLIGHTED
+}
+
+model activity {
+  id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type       activity_type
+  event_id   String
+  event_data Json
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+
+  @@unique([type, event_id])
 }
