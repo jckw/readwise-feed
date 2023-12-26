@@ -3,6 +3,7 @@ import { timeAgo } from "@/lib/utils"
 import RefreshButton from "./refresh-button"
 import { activity } from "@prisma/client"
 import Link from "next/link"
+import Markdown from "react-markdown"
 
 function TableItemSavedInner({
   user,
@@ -16,8 +17,16 @@ function TableItemSavedInner({
       <p className="text-sm font-semibold text-gray-800">
         {(activity.event_data as any).title}
       </p>
-      <p className="text-xs text-gray-500">
+      <p className="text-sm text-gray-600 my-2 leading-relaxed line-clamp-3">
+        {(activity.event_data as any).summary}
+      </p>
+      <p className="text-xs text-gray-500 mt-1">
         {(activity.event_data as any).author}
+        {(activity.event_data as any).author &&
+        (activity.event_data as any).source_url
+          ? " • "
+          : null}
+        {new URL((activity.event_data as any).source_url).hostname}
       </p>
     </Link>
   )
@@ -44,11 +53,13 @@ function TableItemHighlightedInner({
 
   return (
     <>
-      <p className="text-md  font-italic text-gray-700">
-        &ldquo;{(activity.event_data as any).text}&rdquo;
+      <p className="text-md  font-italic text-gray-800 leading-relaxed">
+        <Markdown className="markdown">
+          {`“${(activity.event_data as any).text}”`}
+        </Markdown>
       </p>
       <Wrapper>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 mt-2">
           <span className="font-medium">
             {(activity.event_data as any).doc_data.readable_title}
           </span>
