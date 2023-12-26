@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "name": "/api/import/reader",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "name": "/api/import/highlights",
+      "schedule": "*/30 * * * *"
+    }
+  ]
+}
