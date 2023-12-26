@@ -104,7 +104,7 @@ function TableItem({
 export default async function Table() {
   const startTime = Date.now()
   const items = await prisma.activity.findMany({
-    take: 50,
+    take: 200,
     orderBy: { created_at: "desc" },
   })
   const duration = Date.now() - startTime
