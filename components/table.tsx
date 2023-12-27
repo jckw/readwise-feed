@@ -24,7 +24,7 @@ function TableItemSavedInner({
         <p className="text-xs text-gray-500 mt-1">
           {(activity.event_data as any).author}
           {(activity.event_data as any).author &&
-          (activity.event_data as any).source_url
+          new URL((activity.event_data as any).source_url).hostname
             ? " • "
             : null}
           {new URL((activity.event_data as any).source_url).hostname}
@@ -70,7 +70,7 @@ function TableItemHighlightedInner({
               {(activity.event_data as any).doc_data.readable_title}
             </span>
             {(activity.event_data as any).doc_data.author ? (
-              <>, {(activity.event_data as any).doc_data.author}</>
+              <> • {(activity.event_data as any).doc_data.author}</>
             ) : null}
           </p>
         </div>
