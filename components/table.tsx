@@ -14,20 +14,22 @@ function TableItemSavedInner({
 }) {
   return (
     <Link href={(activity.event_data as any).source_url} target="_blank">
-      <p className="text-sm font-semibold text-gray-800">
-        {(activity.event_data as any).title}
-      </p>
-      <p className="text-sm text-gray-600 my-2 leading-relaxed line-clamp-3">
-        {(activity.event_data as any).summary}
-      </p>
-      <p className="text-xs text-gray-500 mt-1">
-        {(activity.event_data as any).author}
-        {(activity.event_data as any).author &&
-        (activity.event_data as any).source_url
-          ? " • "
-          : null}
-        {new URL((activity.event_data as any).source_url).hostname}
-      </p>
+      <div className="px-3 py-3 bg-gray-300/10 mt-2 rounded">
+        <p className="text-sm font-semibold text-gray-800">
+          {(activity.event_data as any).title}
+        </p>
+        <p className="text-sm text-gray-500 mt-1 mb-2 leading-relaxed line-clamp-2">
+          {(activity.event_data as any).summary}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+          {(activity.event_data as any).author}
+          {(activity.event_data as any).author &&
+          (activity.event_data as any).source_url
+            ? " • "
+            : null}
+          {new URL((activity.event_data as any).source_url).hostname}
+        </p>
+      </div>
     </Link>
   )
 }
@@ -53,20 +55,25 @@ function TableItemHighlightedInner({
 
   return (
     <>
-      <p className="text-md  font-italic text-gray-800 leading-relaxed">
+      <p
+        className="text-md  font-italic text-gray-800 leading-relaxed my-2 mx-2"
+        style={{ textIndent: "-0.3em" }}
+      >
         <Markdown className="markdown">
           {`“${(activity.event_data as any).text}”`}
         </Markdown>
       </p>
       <Wrapper>
-        <p className="text-xs text-gray-500 mt-2">
-          <span className="font-medium">
-            {(activity.event_data as any).doc_data.readable_title}
-          </span>
-          {(activity.event_data as any).doc_data.author ? (
-            <>, {(activity.event_data as any).doc_data.author}</>
-          ) : null}
-        </p>
+        <div className="px-3 py-3 bg-gray-300/10 mt-2 rounded">
+          <p className="text-xs text-gray-500">
+            <span className="font-medium text-gray-600">
+              {(activity.event_data as any).doc_data.readable_title}
+            </span>
+            {(activity.event_data as any).doc_data.author ? (
+              <>, {(activity.event_data as any).doc_data.author}</>
+            ) : null}
+          </p>
+        </div>
       </Wrapper>
     </>
   )
@@ -89,14 +96,12 @@ function TableItem({
         </p>
         <p className="text-sm text-gray-500">{timeAgo(activity.created_at)}</p>
       </div>
-      <div className="px-3 py-3 bg-gray-400/10 mt-2 rounded">
-        {activity.type === "HIGHLIGHTED" ? (
-          <TableItemHighlightedInner user={user} activity={activity} />
-        ) : null}
-        {activity.type === "SAVED" ? (
-          <TableItemSavedInner user={user} activity={activity} />
-        ) : null}
-      </div>
+      {activity.type === "HIGHLIGHTED" ? (
+        <TableItemHighlightedInner user={user} activity={activity} />
+      ) : null}
+      {activity.type === "SAVED" ? (
+        <TableItemSavedInner user={user} activity={activity} />
+      ) : null}
     </div>
   )
 }
@@ -110,7 +115,7 @@ export default async function Table() {
   const duration = Date.now() - startTime
 
   return (
-    <div className="bg-white/30 p-12 shadow-xl ring-1 ring-gray-900/5 rounded-lg backdrop-blur-lg max-w-xl mx-auto w-full">
+    <div className="bg-white/70 p-12 shadow-xl ring-1 ring-gray-900/5 rounded-lg backdrop-blur-lg max-w-xl mx-auto w-full">
       <div className="flex justify-between items-center mb-4">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Recent Activity</h2>
