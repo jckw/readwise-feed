@@ -19,10 +19,23 @@ enum activity_type {
 model activity {
   id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type       activity_type
+  user_id    String        @db.Uuid
   event_id   String
   event_data Json
   created_at DateTime      @default(now())
   updated_at DateTime      @updatedAt
 
+  User user @relation(fields: [user_id], references: [id])
+
   @@unique([type, event_id])
+}
+
+model user {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String
+  readwise_access_token String
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  activities activity[]
 }
