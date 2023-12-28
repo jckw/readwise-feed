@@ -217,6 +217,7 @@ export default async function Table() {
     // group items if they are both highlights of the same doc by the same user
     if (
       referenceItem &&
+      lastGroup.length < 4 &&
       referenceItem.type === "HIGHLIGHTED" &&
       currentItem.type === "HIGHLIGHTED" &&
       (currentItem.event_data as any).doc_data.id ===
@@ -224,9 +225,7 @@ export default async function Table() {
       currentItem.user_id === referenceItem.user_id
     ) {
       lastGroup.push(currentItem)
-    }
-
-    if (!referenceItem || currentItem.type !== referenceItem.type) {
+    } else {
       acc.push([currentItem])
     }
 
