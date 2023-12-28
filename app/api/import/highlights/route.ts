@@ -1,17 +1,29 @@
 import prisma from "@/lib/prisma"
 
-type ReadwiseHighlightsResponse = {
-  count: number
-  results: {
+export type EventData_Highlighted = {
+  id: number
+  text: string
+  created_at: string
+  doc_data: {
     id: string
     source_url: string
     created_at: string
-    highlights: {
-      id: number
-      text: string
-      created_at: string
+    readable_title: string
+    author?: string
+    category: "books" | "articles" | "tweets" | "podcasts"
+  }
+}
+
+type ReadwiseHighlightsResponse = {
+  count: number
+  results: EventData_Highlighted["doc_data"] &
+    {
+      highlights: {
+        id: number
+        text: string
+        created_at: string
+      }[]
     }[]
-  }[]
 }
 
 export async function GET() {

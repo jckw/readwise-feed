@@ -1,14 +1,27 @@
 import prisma from "@/lib/prisma"
 
+export type EventData_Saved = {
+  id: string
+  title: string
+  author?: string
+  summary?: string
+  source_url: string
+  created_at: string
+  category:
+    | "highlight"
+    | "article"
+    | "email"
+    | "rss"
+    | "note"
+    | "pdf"
+    | "epub"
+    | "tweet"
+    | "video"
+}
+
 type ReadwiseReaderResponse = {
   count: number
-  results: {
-    id: string
-    title: string
-    source_url: string
-    created_at: string
-    category: string
-  }[]
+  results: EventData_Saved[]
 }
 
 export async function GET() {

@@ -1,11 +1,13 @@
 import prisma from "@/lib/prisma"
-import { timeAgo } from "@/lib/utils"
+import { indefArt, mapCategory, timeAgo } from "@/lib/utils"
 import RefreshButton from "./refresh-button"
 import { activity } from "@prisma/client"
 import Link from "next/link"
 import Image from "next/image"
 import Markdown from "react-markdown"
 import { useEffect } from "react"
+import { EventData_Highlighted } from "@/app/api/import/highlights/route"
+import { EventData_Saved } from "@/app/api/import/reader/route"
 
 const Wrapper = ({
   children,
@@ -27,13 +29,7 @@ function TableItemSavedInner({
 }: {
   user: { name: string }
   activity: activity & {
-    event_data: {
-      source_url?: string
-      author?: string
-      title?: string
-      summary?: string
-      category: string
-    }
+    event_data: EventData_Saved
   }
 }) {
   return (
@@ -86,10 +82,7 @@ function TableItemHighlightedInner({
 }: {
   user: { name: string }
   activity: activity & {
-    event_data: {
-      text: string
-      doc_data: { readable_title: string; author?: string; source_url: string }
-    }
+    event_data: EventData_Highlighted
   }
 }) {
   return (
@@ -116,10 +109,7 @@ function TableItemHighlightedMultiInner({
 }: {
   user: { name: string }
   activityItems: (activity & {
-    event_data: {
-      text: string
-      doc_data: { readable_title: string; author?: string; source_url: string }
-    }
+    event_data: EventData_Highlighted
   })[]
 }) {
   const rootActivity = activityItems[0]
@@ -130,7 +120,7 @@ function TableItemHighlightedMultiInner({
         <Quote key={activity.id} text={activity.event_data.text} />
       ))}
       <Wrapper sourceUrl={rootActivity.event_data.doc_data.source_url}>
-        <div className="px-3 py-3 bg-gray-300/10 mt-2 rounded">
+        <div className="px-3 py-3 bg-gray-300/10 mt-3 rounded">
           <p className="text-xs text-gray-500">
             <span className="font-medium text-gray-600">
               {rootActivity.event_data.doc_data.readable_title}
@@ -171,10 +161,19 @@ function TableItem({
             {rootActivity.type === "HIGHLIGHTED"
               ? `highlighted ${activityItems.length} part${
                   activityItems.length !== 1 ? "s" : ""
-                }`
+                } of ${indefArt(
+                  mapCategory(
+                    (rootActivity.event_data as EventData_Highlighted).doc_data
+                      .category
+                  )
+                )}`
               : null}
             {rootActivity.type === "SAVED"
-              ? `saved this ${(rootActivity.event_data as any).category}`
+              ? `saved ${indefArt(
+                  mapCategory(
+                    (rootActivity.event_data as EventData_Saved).category
+                  )
+                )}`
               : null}
           </p>
         </div>
