@@ -59,6 +59,28 @@ function TableItemSavedInner({
   )
 }
 
+function Quote({ text }: { text: string }) {
+  return (
+    <div className="text-md font-serif font-italic text-gray-800 leading-relaxed my-2 mx-3">
+      <Markdown
+        className="markdown"
+        disallowedElements={["a"]}
+        components={{
+          p: ({ node, ...props }) => (
+            <p className="first:indent-[-0.3em]" {...props} />
+          ),
+          strong: ({ node, ...props }) => <span {...props} />,
+          ol: ({ node, ...props }) => (
+            <ol className="list-decimal" {...props} />
+          ),
+          ul: ({ node, ...props }) => <ul className="list-disc" {...props} />,
+          li: ({ node, ...props }) => <li className="ml-5 pl-1" {...props} />,
+        }}
+      >{`“${text}”`}</Markdown>
+    </div>
+  )
+}
+
 function TableItemHighlightedInner({
   activity,
 }: {
@@ -72,14 +94,7 @@ function TableItemHighlightedInner({
 }) {
   return (
     <>
-      <p
-        className="text-md  font-italic text-gray-800 leading-relaxed my-2 mx-2"
-        style={{ textIndent: "-0.3em" }}
-      >
-        <Markdown className="markdown">
-          {`“${activity.event_data.text}”`}
-        </Markdown>
-      </p>
+      <Quote text={activity.event_data.text} />
       <Wrapper sourceUrl={activity.event_data.doc_data.source_url}>
         <div className="px-3 py-3 bg-gray-300/10 mt-2 rounded">
           <p className="text-xs text-gray-500">
@@ -112,15 +127,7 @@ function TableItemHighlightedMultiInner({
   return (
     <>
       {activityItems.reverse().map((activity, i) => (
-        <p
-          key={activity.id}
-          className="text-md  font-italic text-gray-800 leading-relaxed my-2 mx-2"
-          style={{ textIndent: "-0.3em" }}
-        >
-          <Markdown className="markdown">
-            {`“${activity.event_data.text}”`}
-          </Markdown>
-        </p>
+        <Quote key={activity.id} text={activity.event_data.text} />
       ))}
       <Wrapper sourceUrl={rootActivity.event_data.doc_data.source_url}>
         <div className="px-3 py-3 bg-gray-300/10 mt-2 rounded">
@@ -226,8 +233,6 @@ export default async function Table() {
 
     return acc
   }, [] as (typeof items)[])
-
-  console.log(dynamicallyGroupedItems)
 
   return (
     <div className="bg-white/70 p-12 shadow-xl ring-1 ring-gray-900/5 rounded-lg backdrop-blur-lg max-w-xl mx-auto w-full">

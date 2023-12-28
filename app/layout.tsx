@@ -1,5 +1,5 @@
 import "./globals.css"
-import { Inter } from "next/font/google"
+import { Inter, Merriweather } from "next/font/google"
 
 export const metadata = {
   metadataBase: new URL("https://postgres-prisma.vercel.app"),
@@ -13,6 +13,13 @@ const inter = Inter({
   display: "swap",
 })
 
+const merriweather = Merriweather({
+  variable: "--font-merriweather",
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+})
+
 export default function RootLayout({
   children,
 }: {
@@ -20,7 +27,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.variable}>{children}</body>
+      <body className={`${inter.variable} ${merriweather.variable}`}>
+        {children}
+      </body>
     </html>
   )
 }
