@@ -5,6 +5,7 @@ import { activity } from "@prisma/client"
 import Link from "next/link"
 import Image from "next/image"
 import Markdown from "react-markdown"
+import { useEffect } from "react"
 
 const Wrapper = ({
   children,
@@ -95,13 +96,58 @@ function TableItemHighlightedInner({
   )
 }
 
+function TableItemHighlightedMultiInner({
+  activityItems,
+}: {
+  user: { name: string }
+  activityItems: (activity & {
+    event_data: {
+      text: string
+      doc_data: { readable_title: string; author?: string; source_url: string }
+    }
+  })[]
+}) {
+  const rootActivity = activityItems[0]
+
+  return (
+    <>
+      {activityItems.reverse().map((activity, i) => (
+        <p
+          key={activity.id}
+          className="text-md  font-italic text-gray-800 leading-relaxed my-2 mx-2"
+          style={{ textIndent: "-0.3em" }}
+        >
+          <Markdown className="markdown">
+            {`“${activity.event_data.text}”`}
+          </Markdown>
+        </p>
+      ))}
+      <Wrapper sourceUrl={rootActivity.event_data.doc_data.source_url}>
+        <div className="px-3 py-3 bg-gray-300/10 mt-2 rounded">
+          <p className="text-xs text-gray-500">
+            <span className="font-medium text-gray-600">
+              {rootActivity.event_data.doc_data.readable_title}
+            </span>
+            {rootActivity.event_data.doc_data.author ? (
+              <> • {rootActivity.event_data.doc_data.author}</>
+            ) : null}
+          </p>
+        </div>
+      </Wrapper>
+    </>
+  )
+}
+
 function TableItem({
   user,
-  activity,
+  activityItems,
 }: {
   user: { id: string; name: string }
-  activity: activity
+  activityItems: activity[]
 }) {
+  const rootActivity = activityItems[0]
+  const isMultiple = activityItems.length > 1
+
   return (
     <div className="py-4">
       <div className="flex items-center justify-between mb-4">
@@ -115,18 +161,35 @@ function TableItem({
           />
           <p className="text-sm text-gray-500">
             <span className="font-medium">{user.name}</span>{" "}
-            {activity.type === "HIGHLIGHTED" ? "highlighted" : null}
-            {activity.type === "SAVED" ? "saved" : null}
+            {rootActivity.type === "HIGHLIGHTED"
+              ? `highlighted ${activityItems.length} part${
+                  activityItems.length !== 1 ? "s" : ""
+                }`
+              : null}
+            {rootActivity.type === "SAVED"
+              ? `saved this ${(rootActivity.event_data as any).category}`
+              : null}
           </p>
         </div>
-        <p className="text-sm text-gray-500">{timeAgo(activity.created_at)}</p>
+        <p className="text-sm text-gray-500">
+          {timeAgo(rootActivity.created_at)}
+        </p>
       </div>
-
-      {activity.type === "HIGHLIGHTED" ? (
-        <TableItemHighlightedInner user={user} activity={activity as any} />
+      {rootActivity.type === "HIGHLIGHTED" ? (
+        isMultiple ? (
+          <TableItemHighlightedMultiInner
+            user={user}
+            activityItems={activityItems as any}
+          />
+        ) : (
+          <TableItemHighlightedInner
+            user={user}
+            activity={rootActivity as any}
+          />
+        )
       ) : null}
-      {activity.type === "SAVED" ? (
-        <TableItemSavedInner user={user} activity={activity as any} />
+      {rootActivity.type === "SAVED" ? (
+        <TableItemSavedInner user={user} activity={rootActivity as any} />
       ) : null}
     </div>
   )
@@ -141,6 +204,31 @@ export default async function Table() {
   })
   const duration = Date.now() - startTime
 
+  const dynamicallyGroupedItems = items.reduce((acc, currentItem) => {
+    const lastGroup = acc[acc.length - 1]
+    const referenceItem = lastGroup ? lastGroup[0] : null
+
+    // group items if they are both highlights of the same doc by the same user
+    if (
+      referenceItem &&
+      referenceItem.type === "HIGHLIGHTED" &&
+      currentItem.type === "HIGHLIGHTED" &&
+      (currentItem.event_data as any).doc_data.id ===
+        (referenceItem.event_data as any).doc_data.id &&
+      currentItem.user_id === referenceItem.user_id
+    ) {
+      lastGroup.push(currentItem)
+    }
+
+    if (!referenceItem || currentItem.type !== referenceItem.type) {
+      acc.push([currentItem])
+    }
+
+    return acc
+  }, [] as (typeof items)[])
+
+  console.log(dynamicallyGroupedItems)
+
   return (
     <div className="bg-white/70 p-12 shadow-xl ring-1 ring-gray-900/5 rounded-lg backdrop-blur-lg max-w-xl mx-auto w-full">
       <div className="flex justify-between items-center mb-4">
@@ -153,8 +241,12 @@ export default async function Table() {
         <RefreshButton />
       </div>
       <div className="divide-y divide-gray-900/5">
-        {items.map((doc) => (
-          <TableItem key={doc.id} user={doc.User} activity={doc} />
+        {dynamicallyGroupedItems.map((docGroup) => (
+          <TableItem
+            key={docGroup[0].id}
+            user={docGroup[0].User}
+            activityItems={docGroup}
+          />
         ))}
       </div>
     </div>
