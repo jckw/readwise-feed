@@ -1,7 +1,10 @@
 # Readwise Feed
 
-Readwise Feed is simple demo app that showcases a number of Readwise users' activity in
-a single feed. It is built with Next.js, Prisma, and Vercel Postgres.
+Readwise Feed is an experimental passive social media platform that showcases a number
+of users' reading activity and interests in a single feed via syncing their activity
+from Readwise.
+
+It is built with Next.js, Prisma, and Vercel Postgres.
 
 ## Demo
 
