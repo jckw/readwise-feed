@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/import/reader",
-      "schedule": "0 3 * * *"
+      "schedule": "*/30 * * * *"
     },
     {
       "path": "/api/import/highlights",
-      "schedule": "0 3 * * *"
+      "schedule": "*/30 * * * *"
     }
   ]
 }
