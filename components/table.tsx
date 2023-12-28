@@ -57,7 +57,7 @@ function TableItemSavedInner({
 
 function Quote({ text }: { text: string }) {
   return (
-    <div className="text-md font-serif font-italic text-gray-800 leading-relaxed my-2 mx-3">
+    <div className="text-md font-serif font-italic text-gray-800 leading-relaxed my-3 mx-3">
       <Markdown
         className="markdown"
         disallowedElements={["a"]}
