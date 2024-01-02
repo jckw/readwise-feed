@@ -1,13 +1,13 @@
 import prisma from "@/lib/prisma"
+import { create } from "domain"
 
 export type EventData_Highlighted = {
   id: number
   text: string
   created_at: string
   doc_data: {
-    id: string
+    user_book_id: number
     source_url: string
-    created_at: string
     readable_title: string
     author?: string
     category: "books" | "articles" | "tweets" | "podcasts"
@@ -16,14 +16,13 @@ export type EventData_Highlighted = {
 
 type ReadwiseHighlightsResponse = {
   count: number
-  results: EventData_Highlighted["doc_data"] &
-    {
-      highlights: {
-        id: number
-        text: string
-        created_at: string
-      }[]
+  results: (EventData_Highlighted["doc_data"] & {
+    highlights: {
+      id: number
+      text: string
+      created_at: string
     }[]
+  })[]
 }
 
 export async function GET() {
@@ -37,15 +36,46 @@ export async function GET() {
     })
     const data = (await res.json()) as ReadwiseHighlightsResponse
 
-    const highlights = data.results.flatMap((doc) => {
-      const { highlights, ...rest } = doc
-      return highlights.map((highlight) => ({
-        doc_data: rest,
-        ...highlight,
-      }))
+    const highlights: (ReadwiseHighlightsResponse["results"][0]["highlights"][0] & {
+      doc_data: EventData_Highlighted["doc_data"]
+    })[] = []
+    const user_documents: EventData_Highlighted["doc_data"][] = []
+
+    data.results.forEach((doc) => {
+      const { highlights: hs, ...rest } = doc
+
+      user_documents.push(rest)
+
+      hs.forEach((highlight) => {
+        highlights.push({
+          doc_data: rest,
+          ...highlight,
+        })
+      })
     })
 
-    const x = await Promise.all(
+    const uds = await Promise.all(
+      user_documents.map((ud) =>
+        prisma.user_document.upsert({
+          where: {
+            user_book_id: ud.user_book_id,
+          },
+          update: {},
+          create: {
+            user_id: user.id,
+            user_book_id: ud.user_book_id,
+            category: ud.category,
+            data: ud,
+          },
+        })
+      )
+    )
+    const uds_by_id = uds.reduce((acc, ud) => {
+      acc[ud.user_book_id] = ud
+      return acc
+    }, {} as Record<number, (typeof uds)[0]>)
+
+    await Promise.all(
       highlights.map((highlight) =>
         prisma.activity.upsert({
           where: {
@@ -61,6 +91,7 @@ export async function GET() {
             type: "HIGHLIGHTED",
             event_data: highlight,
             created_at: new Date(highlight.created_at),
+            user_document_id: uds_by_id[highlight.doc_data.user_book_id].id,
           },
         })
       )

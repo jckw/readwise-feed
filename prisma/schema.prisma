@@ -17,17 +17,35 @@ enum activity_type {
 }
 
 model activity {
-  id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type       activity_type
-  user_id    String        @db.Uuid
-  event_id   String
-  event_data Json
-  created_at DateTime      @default(now())
-  updated_at DateTime      @updatedAt
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type             activity_type
+  user_id          String        @db.Uuid
+  event_id         String
+  event_data       Json
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  user_document_id String?       @db.Uuid
 
-  User user @relation(fields: [user_id], references: [id])
+  User         user           @relation(fields: [user_id], references: [id])
+  UserDocument user_document? @relation(fields: [user_document_id], references: [id])
 
   @@unique([type, event_id])
+}
+
+model user_document {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  user_id      String @db.Uuid
+  user_book_id Int    @unique
+  category     String
+
+  data Json
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  User     user       @relation(fields: [user_id], references: [id])
+  activity activity[]
 }
 
 model user {
@@ -37,5 +55,6 @@ model user {
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
 
-  activities activity[]
+  activities    activity[]
+  user_document user_document[]
 }
